@@ -5,8 +5,15 @@ import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu
 import android.view.MenuItem
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.blackrose.news_kotlin.models.Article
+import com.blackrose.news_kotlin.remote.RemoteDataSource
+import com.list.rados.fast_list.bind
+import com.list.rados.fast_list.update
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.list_item_news.view.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,6 +27,30 @@ class MainActivity : AppCompatActivity() {
                 .setAction("Action", null).show()
         }
 
+        news_swipe_refresh.setOnRefreshListener {
+            getNews()
+        }
+
+        news_swipe_refresh.isRefreshing = true
+        getNews()
+        rvNews.bind(emptyList(), R.layout.list_item_news){ data : Article ->
+            this.tv_news_title.text = data.title
+        }.layoutManager(LinearLayoutManager(applicationContext))
+
+
+
+    }
+
+    private fun getNews() {
+        RemoteDataSource.loadNews({
+            // TODO update ui
+            news_swipe_refresh.isRefreshing = false
+            rvNews.update(it)
+
+        }, {
+            news_swipe_refresh.isRefreshing = false
+            // TODO show toast
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
